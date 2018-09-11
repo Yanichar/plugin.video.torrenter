@@ -24,8 +24,9 @@ proxy = int(sys.modules["__main__"].__settings__.getSetting("cl_proxy"))
 if proxy == 1:
     socks_ip = sys.modules["__main__"].__settings__.getSetting("socks_ip")
     import socket
-    from resources import socks
-    socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, socks_ip, 9050)
+    from resources.proxy import socks
+    socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, socks_ip,
+                          int(sys.modules["__main__"].__settings__.getSetting("socks_port")))
     socket.socket = socks.socksocket
 import urllib
 import urllib2

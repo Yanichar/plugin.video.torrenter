@@ -297,9 +297,17 @@ class Core:
 
     def test(self, params={}):
         pass
-        import searchwindow
-        params = {'mode': 'file_browser', 'path':'D:\\', 'tdir':'D:\\FRAPS\\'}
-        searchwindow.main(params)
+        xbmc.Player().play('D:\\filmz\\The Missing (2014).mp4')
+        from Anteoloader import OverlayText, OVERLAY_WIDTH, OVERLAY_HEIGHT, XBFONT_CENTER_X,XBFONT_CENTER_Y
+        overlay = OverlayText(w=OVERLAY_WIDTH, h=OVERLAY_HEIGHT,
+                    alignment=XBFONT_CENTER_X | XBFONT_CENTER_Y)
+        overlay.show()
+        overlay.text = 'XXXXXXXXXXXXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxXXXXXXXXXXXXXXXXXX\r\n' \
+                       'YYyyyYyYYyYyY'
+        time.sleep(5)
+        overlay.hide()
+        time.sleep(1)
+        xbmc.Player().stop()
 
     def swHistory(self, params={}):
         import searchwindow
@@ -556,11 +564,9 @@ class Core:
 
         if action2 == 'open':
             filename, foldername, path, url, seek, length, ind = db.get('filename, foldername, path, url, seek, length, ind', 'addtime', str(addtime))
-            if os.path.exists(path) and os.path.getsize(path) > 0:
+            if os.path.exists(path):
                 self.__settings__.setSetting("lastTorrent", path)
             else:
-                if os.path.exists(path):
-                    os.unlink(path)
                 torrent = Downloader.Torrent(self.userStorageDirectory, torrentFilesDirectory=self.torrentFilesDirectory)
                 path = torrent.saveTorrent(url)
                 self.__settings__.setSetting("lastTorrent", path)
@@ -576,11 +582,9 @@ class Core:
                 seek = int(seek)
             else:
                 seek = 0
-            if os.path.exists(path) and os.path.getsize(path) > 0:
+            if os.path.exists(path):
                 self.__settings__.setSetting("lastTorrent", path)
             else:
-                if os.path.exists(path):
-                    os.unlink(path)
                 torrent = Downloader.Torrent(self.userStorageDirectory, torrentFilesDirectory=self.torrentFilesDirectory)
                 self.__settings__.setSetting("lastTorrent", torrent.saveTorrent(url))
             xbmc.executebuiltin('xbmc.RunPlugin("plugin://plugin.video.torrenter/?action=playTorrent&url='+str(ind)+'&seek='+str(seek)+'")')
@@ -1089,28 +1093,6 @@ class Core:
                 self.drawItem(title, 'downloadLibtorrent', link, image=img, info=info, contextMenu=contextMenu, replaceMenu=False)
             #self.drawItem(title, 'openTorrent', link, img, info=info, contextMenu=contextMenu, replaceMenu=False)
 
-    def ActionInfo(self, params={}):
-        from resources.skins.DialogXml import DialogXml
-        get = params.get
-        contenter=get('provider')
-        infolink=get('url')
-        link=get('link')
-        if ROOT + os.sep + 'resources' + os.sep + 'contenters' not in sys.path:
-            sys.path.insert(0, ROOT + os.sep + 'resources' + os.sep + 'contenters')
-        try:
-            self.Content = getattr(__import__(contenter), contenter)()
-        except Exception, e:
-            log('Unable to use contenter: ' + contenter + ' at ' + ' ActionInfo(). Exception: ' + str(e))
-
-        movieInfo=self.Content.get_info(infolink)
-        if movieInfo:
-            w = DialogXml("movieinfo.xml", ROOT, "Default")
-            w.doModal(movieInfo, link)
-            del w
-            del movieInfo
-        else:
-            showMessage(self.localize('Information'),self.localize('Information not found!'))
-
     def searchOption(self, params={}):
         try:
             apps = json.loads(urllib.unquote_plus(params.get("url")))
@@ -1437,6 +1419,7 @@ class Core:
         if not url:
             action = xbmcgui.Dialog()
             url = action.browse(1, self.localize('Choose .torrent in video library'), 'video', '.torrent')
+            url = urllib.quote_plus(url)
             torrent = Downloader.Torrent(self.userStorageDirectory, torrentFilesDirectory=self.torrentFilesDirectory)
             self.__settings__.setSetting("lastTorrent", torrent.saveTorrent(url))
             self.__settings__.setSetting("lastTorrentUrl", url)
@@ -1592,7 +1575,8 @@ class Core:
             url = Searchers().downloadWithSearcher(classMatch.group(2), searcher)
             self.__settings__.setSetting("lastTorrent", url)
 
-        torrent = Downloader.Torrent(self.userStorageDirectory, torrentFilesDirectory=self.torrentFilesDirectory)
+        torrent = Downloader.Torrent(self.userStorageDirectory,
+                                     torrentFilesDirectory=self.torrentFilesDirectory)
         if not torrent: torrent = Downloader.Torrent(self.userStorageDirectory,
                                                      torrentFilesDirectory=self.torrentFilesDirectory)
         filename = torrent.saveTorrent(url)

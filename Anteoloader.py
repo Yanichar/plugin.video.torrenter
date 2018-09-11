@@ -133,7 +133,7 @@ class AnteoLoader:
             keep_incomplete = True
 
         dht_routers = ["router.bittorrent.com:6881", "router.utorrent.com:6881"]
-        user_agent = 'uTorrent/2200(24683)'
+        user_agent = ''
         self.engine = Engine(uri=file_url(localize_path(self.torrentFile)), download_path=self.storageDirectory,
                              connections_limit=connections_limit,
                              encryption=encryption, keep_complete=keep_complete, keep_incomplete=keep_incomplete,
@@ -285,6 +285,12 @@ class AnteoPlayer(xbmc.Player):
     def __init__(self, userStorageDirectory, torrentUrl, params={}):
         self.userStorageDirectory = userStorageDirectory
         self.torrentUrl = torrentUrl
+        if not is_writable(self.userStorageDirectory):
+            xbmcgui.Dialog().ok(Localization.localize('Torrenter v2'),
+                    Localization.localize('Your storage path is not writable or not local! Please change it in settings!'),
+                    self.storageDirectory)
+
+            sys.exit(1)
         xbmc.Player.__init__(self)
         log("["+author+"Player] Initalized v"+__version__)
         self.params = params
@@ -380,7 +386,7 @@ class AnteoPlayer(xbmc.Player):
 
         enable_dht = self.__settings__.getSetting("enable_dht") == 'true'
         dht_routers = ["router.bittorrent.com:6881","router.utorrent.com:6881"]
-        user_agent = 'uTorrent/2200(24683)'
+        user_agent = ''
         self.pre_buffer_bytes = int(self.__settings__.getSetting("pre_buffer_bytes"))*1024*1024
 
         self.engine = Engine(uri=file_url(self.torrentUrl), download_path=self.userStorageDirectory,
@@ -662,7 +668,8 @@ class OverlayText(object):
         self._shown = False
         self._text = ""
         self._label = xbmcgui.ControlLabel(x, y, w, h, self._text, *args, **kwargs)
-        self._background = xbmcgui.ControlImage(x, y, w, h, os.path.join(RESOURCES_PATH, "images", "black.png"))
+        filename = os.path.join(RESOURCES_PATH, "images", "black.png")
+        self._background = xbmcgui.ControlImage(x, y, w, h, filename)
         self._background.setColorDiffuse("0xD0000000")
 
     def show(self):
@@ -696,5 +703,10 @@ class OverlayText(object):
 
         skin_path = xbmc.translatePath("special://skin/")
         tree = ET.parse(os.path.join(skin_path, "addon.xml"))
-        res = tree.findall("./extension/res")[0]
+        res = None
+        for element in tree.findall("./extension/res"):
+            if element.attrib["default"] == 'true':
+                res = element
+                break
+        if res is None: res = tree.findall("./extension/res")[0]
         return int(res.attrib["width"]), int(res.attrib["height"])
