@@ -178,6 +178,11 @@ class Core:
             self.drawItem('< %s >' % self.localize('Clear Storage'), 'clearStorage', isFolder=True,
                           image=self.ROOT + '/icons/clear.png')
 
+        #Clear storage
+        if '0' != self.__settings__.getSetting("keep_files"):
+            self.drawItem('< %s >' % self.localize('Clear Storage'), 'clearStorage', isFolder=True,
+                          image=self.ROOT + '/icons/clear.png')
+
         view_style('sectionMenu')
         xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
 
