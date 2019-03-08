@@ -89,6 +89,20 @@ class Core:
                 self.drawItem('< %s >' % self.localize('Search History'), 'History',
                               image=self.ROOT + '/icons/history2.png', contextMenu=HistorycontextMenu, replaceMenu=False)
 
+        #History
+        if self.history_bool and self.searchwindowmode > 0:
+            HistorycontextMenu = []
+            HistorycontextMenu.extend(contextMenu)
+            HistorycontextMenu.append(
+                (self.localize('Clear %s') % self.localize('Search History'),
+                 ListString % ('History', 'clear', 'addtime', '')))
+            if self.searchwindowmode == 1:
+                self.drawItem('< %s >' % self.localize('Search History'), 'swHistory',
+                              image=self.ROOT + '/icons/history2.png', contextMenu=HistorycontextMenu, replaceMenu=False)
+            else:
+                self.drawItem('< %s >' % self.localize('Search History'), 'History',
+                              image=self.ROOT + '/icons/history2.png', contextMenu=HistorycontextMenu, replaceMenu=False)
+
         #Search
         if self.searchwindowmode == 1:
             self.drawItem('< %s >' % self.localize('Search'), 'swsearch', image=self.ROOT + '/icons/search.png',)
